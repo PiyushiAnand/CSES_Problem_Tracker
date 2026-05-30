@@ -8,7 +8,7 @@ const Problem = require("../models/Problem");
 mongoose.connect(process.env.MONGO_URI);
 
 async function importData() {
-    const raw = fs.readFileSync("cses_problems.json");
+    const raw = fs.readFileSync("../topics.json");
     const data = JSON.parse(raw);
 
     await Problem.deleteMany();

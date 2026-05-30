@@ -18,6 +18,28 @@ router.post("/", async (req, res) => {
     }
 });
 
+
+router.post("/login", async (req, res) => {
+    try {
+        const { username } = req.body;
+        console.log(username);
+        let user = await User.findOne({ username });
+
+        if (!user) {
+            user = await User.create({
+                username,
+                solvedProblems: [],
+            });
+        }
+
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({
+            message: err.message,
+        });
+    }
+});
+
 // get user
 router.get("/:id", async (req, res) => {
     try {
