@@ -1,6 +1,10 @@
 import ProblemCard from "./ProblemCard";
 
-function TopicSection({ topic, problems }) {
+function TopicSection({
+  topic,
+  problems,
+  user,
+}) {
   return (
     <section className="mb-10">
       <h2 className="text-2xl font-bold mb-4">
@@ -10,8 +14,9 @@ function TopicSection({ topic, problems }) {
       <div className="grid gap-3">
         {problems.map((problem) => (
           <ProblemCard
-            key={problem.name}
+            key={problem._id}
             problem={problem}
+            user={user}
           />
         ))}
       </div>

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import TopicSection from "./components/Topic";
 
-const API_URL = `http://localhost:5001/api`;
+const API_URL = "http://localhost:5001/api";
 
 function App() {
   const [data, setData] = useState({});
@@ -67,6 +67,12 @@ function App() {
     }
   };
 
+  const logout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    setUsername("");
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
@@ -95,13 +101,17 @@ function App() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
-      <Navbar />
+      <Navbar
+        user={user}
+        logout={logout}
+      />
 
       <main className="max-w-5xl mx-auto px-6 py-10">
         {Object.entries(data).map(([topic, problems]) => (
           <TopicSection
             key={topic}
             topic={topic}
+            user={user}
             problems={problems}
           />
         ))}

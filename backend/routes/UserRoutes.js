@@ -40,18 +40,4 @@ router.post("/login", async (req, res) => {
     }
 });
 
-// get user
-router.get("/:id", async (req, res) => {
-    try {
-        const user = await User.findById(req.params.id)
-            .populate("solvedProblems");
-
-        res.json(user);
-    } catch (err) {
-        res.status(500).json({
-            message: err.message,
-        });
-    }
-});
-
 module.exports = router;

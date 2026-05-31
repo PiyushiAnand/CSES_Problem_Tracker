@@ -7,6 +7,7 @@ const connectDB = require("./config/db");
 
 const problemRoutes = require("./routes/ProblemRoutes");
 const userRoutes = require("./routes/UserRoutes");
+const userProblemRoutes = require("./routes/UserProblemRoutes");
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use(express.json());
 
 app.use("/api/problems", problemRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/userproblems", userProblemRoutes);
 
 app.get("/", (req, res) => {
     res.send("Server Running");

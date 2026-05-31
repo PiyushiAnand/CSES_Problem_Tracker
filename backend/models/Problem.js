@@ -15,6 +15,8 @@ const ProblemSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+
+    
 });
 
 module.exports = mongoose.model("Problem", ProblemSchema);

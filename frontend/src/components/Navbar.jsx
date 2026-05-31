@@ -1,19 +1,29 @@
-function Navbar() {
+function Navbar({ user, logout }) {
   return (
-    <nav className="
-      sticky
-      top-0
-      z-50
-      bg-zinc-950/80
-      backdrop-blur
-      border-b
-      border-zinc-800
-      px-8
-      py-4
-    ">
-      <h1 className="text-3xl font-bold">
-        CSES Roadmap
+    <nav className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
+      <h1 className="text-2xl font-bold">
+        CSES Tracker
       </h1>
+
+      <div className="flex items-center gap-4">
+        <span className="text-zinc-300">
+          {user.username}
+        </span>
+
+        <button
+          onClick={logout}
+          className="
+            px-3
+            py-2
+            rounded-lg
+            bg-red-600
+            hover:bg-red-500
+            transition
+          "
+        >
+          Logout
+        </button>
+      </div>
     </nav>
   );
 }
