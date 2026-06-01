@@ -8,9 +8,23 @@ function App() {
   const [data, setData] = useState({});
   const [user, setUser] = useState(null);
   const [username, setUsername] = useState("");
-  const [stats, setStats] = useState([]);
+  const [reset, setReset] = useState(false);
+  // const [stats, setStats] = useState([]);
   const [progressMap, setProgressMap] = useState({});
 
+  const updateProgress = (
+    problemId,
+    updates
+  ) => {
+    setProgressMap((prev) => ({
+      ...prev,
+      [problemId]: {
+        ...prev[problemId],
+        ...updates,
+      },
+    }));
+  };
+  
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
 
@@ -63,40 +77,59 @@ function App() {
   setProgressMap(map);
 };
 
-  const fetchStats = async () => {
-  if (!user) return;
+  
 
+useEffect(() => {
+  if (user) {
+    fetchProgress();
+  }
+}, [user]);
+
+
+const resetAllProgress = async () => {
   try {
-    const res = await fetch(
-      `${API_URL}/userproblems/stats/${user._id}`
+    await fetch(
+      `${API_URL}/userproblems/reset/${user._id}`,
+      {
+        method: "DELETE",
+      }
     );
-
-    if (!res.ok) {
-      console.error(
-        "Failed to fetch stats:",
-        await res.text()
-      );
-      return;
-    }
-
-    const statsData = await res.json();
-
-    setStats(
-      Array.isArray(statsData)
-        ? statsData
-        : []
-    );
+    setReset(true);
+    setProgressMap({});
   } catch (err) {
     console.error(err);
   }
 };
 
-useEffect(() => {
-  if (user) {
-    fetchProgress();
-    fetchStats();
+const resetTopicProgress = async (
+  topic
+) => {
+  try {
+    await fetch(
+      `${API_URL}/userproblems/reset/${user._id}/topic/${encodeURIComponent(
+        topic
+      )}`,
+      {
+        method: "DELETE",
+      }
+    );
+
+    setProgressMap((prev) => {
+      const updated = { ...prev };
+
+      const topicProblems =
+        data[topic] || [];
+
+      topicProblems.forEach((p) => {
+        delete updated[p._id];
+      });
+
+      return updated;
+    });
+  } catch (err) {
+    console.error(err);
   }
-}, [user]);
+};
 
   const login = async () => {
     try {
@@ -131,7 +164,7 @@ useEffect(() => {
     localStorage.removeItem("user");
     setUser(null);
     setUsername("");
-    setStats([]);
+    setProgressMap({});
   };
 
   if (!user) {
@@ -167,18 +200,29 @@ useEffect(() => {
       <Navbar
         user={user}
         logout={logout}
+        resetAllProgress={resetAllProgress}
       />
 
       <main className="max-w-5xl mx-auto px-6 py-10">
         {Object.entries(data).map(
           ([topic, problems]) => {
-            const topicStats =
-              stats.find(
-                (s) => s.topic === topic
-              ) || {
-                solved: 0,
-                total: problems.length,
-                percentage: 0,
+             const solvedCount =
+              problems.filter(
+                (p) =>
+                  progressMap[p._id]?.solved
+              ).length;
+
+            const topicStats = {
+              solved: solvedCount,
+              total: problems.length,
+              percentage:
+                problems.length === 0
+                  ? 0
+                  : (
+                      (solvedCount /
+                        problems.length) *
+                      100
+                    ).toFixed(2), 
               };
 
             return (
@@ -188,8 +232,9 @@ useEffect(() => {
                 problems={problems}
                 user={user}
                 stats={topicStats}
-                refreshStats={fetchStats}
+                updateProgress={updateProgress}
                 progressMap={progressMap}
+                  resetTopicProgress={resetTopicProgress}
               />
             );
           }

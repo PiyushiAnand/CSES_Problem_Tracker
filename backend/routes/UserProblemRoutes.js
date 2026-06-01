@@ -14,8 +14,6 @@ const UserProblem = require("../models/UserProblem");
 
 router.post("/", async (req, res) => {
     try {
-        // console.log("========== POST /userproblems ==========");
-        // console.log("BODY:", req.body);
 
         let {
             user,
@@ -75,183 +73,14 @@ router.post("/", async (req, res) => {
     }
 });
 
-// ========================================
-// UPDATE solved status only
-// ========================================
-
-router.patch("/solve", async (req, res) => {
-    try {
-        const {
-            user,
-            problem,
-            solved,
-        } = req.body;
-
-        const progress =
-            await UserProblem.findOneAndUpdate(
-                {
-                    user,
-                    problem,
-                },
-                {
-                    solved,
-                },
-                {
-                    upsert: true,
-                    new: true,
-                    runValidators: true,
-                }
-            );
-
-        res.json(progress);
-    } catch (err) {
-        res.status(500).json({
-            message: err.message,
-        });
-    }
-});
-
-
-// ========================================
-// UPDATE difficulty only
-// ========================================
-
-router.patch("/difficulty", async (req, res) => {
-    try {
-        const {
-            user,
-            problem,
-            difficulty,
-        } = req.body;
-
-        const progress =
-            await UserProblem.findOneAndUpdate(
-                {
-                    user,
-                    problem,
-                },
-                {
-                    difficulty,
-                },
-                {
-                    upsert: true,
-                    new: true,
-                    runValidators: true,
-                }
-            );
-
-        res.json(progress);
-    } catch (err) {
-        res.status(500).json({
-            message: err.message,
-        });
-    }
-});
-
-
-// ========================================
-// UPDATE notes only
-// ========================================
-
-router.patch("/notes", async (req, res) => {
-    try {
-        const {
-            user,
-            problem,
-            notes,
-        } = req.body;
-
-        const progress =
-            await UserProblem.findOneAndUpdate(
-                {
-                    user,
-                    problem,
-                },
-                {
-                    notes,
-                },
-                {
-                    upsert: true,
-                    new: true,
-                    runValidators: true,
-                }
-            );
-
-        res.json(progress);
-    } catch (err) {
-        res.status(500).json({
-            message: err.message,
-        });
-    }
-});
-
-
-// ========================================
-// UPDATE concepts only
-// ========================================
-
-router.patch("/concepts", async (req, res) => {
-    try {
-        const {
-            user,
-            problem,
-            concepts,
-        } = req.body;
-
-        const progress =
-            await UserProblem.findOneAndUpdate(
-                {
-                    user,
-                    problem,
-                },
-                {
-                    concepts,
-                },
-                {
-                    upsert: true,
-                    new: true,
-                    runValidators: true,
-                }
-            );
-
-        res.json(progress);
-    } catch (err) {
-        res.status(500).json({
-            message: err.message,
-        });
-    }
-});
-
-
-// ========================================
-// DELETE progress
-// ========================================
-
-router.delete("/:userId/:problemId", async (req, res) => {
-    try {
-        await UserProblem.findOneAndDelete({
-            user: req.params.userId,
-            problem: req.params.problemId,
-        });
-
-        res.json({
-            message: "Progress deleted",
-        });
-    } catch (err) {
-        res.status(500).json({
-            message: err.message,
-        });
-    }
-});
-
-
 
 router.delete("/reset/:userId", async (req, res) => {
     try {
+        console.log("Resetting all progress for user:", req.params.userId);
         await UserProblem.deleteMany({
             user: req.params.userId,
         });
-
+    
         res.json({
             message: "All progress reset",
         });
@@ -261,7 +90,6 @@ router.delete("/reset/:userId", async (req, res) => {
         });
     }
 });
-
 
 
 router.delete(
@@ -341,69 +169,6 @@ router.get(
     }
 );
 
-// ========================================
-// ALL TOPIC STATS
-// ========================================
-
-router.get(
-    "/stats/:userId",
-    async (req, res) => {
-        // console.log("Fetching all stats for user:", req.params.userId);
-        try {
-            const topics =
-                await Problem.distinct(
-                    "topic"
-                );
-
-            const result = [];
-
-            for (const topic of topics) {
-                const problems =
-                    await Problem.find({
-                        topic,
-                    });
-
-                const ids = problems.map(
-                    (p) => p._id
-                );
-
-                const solved =
-                    await UserProblem.countDocuments(
-                        {
-                            user: req.params.userId,
-                            problem: {
-                                $in: ids,
-                            },
-                            solved: true,
-                        }
-                    );
-
-                result.push({
-                    topic,
-                    solved,
-                    total:
-                        problems.length,
-                    percentage:
-                        problems.length ===
-                        0
-                            ? 0
-                            : (
-                                  (solved /
-                                      problems.length) *
-                                  100
-                              ).toFixed(2),
-                });
-            }
-
-            res.json(result);
-        } catch (err) {
-            res.status(500).json({
-                message: err.message,
-            });
-        }
-    }
-);
-
 
 // ========================================
 // GET all progress for a user
@@ -424,33 +189,5 @@ router.get("/user/:userId", async (req, res) => {
         });
     }
 });
-
-
-// ========================================
-// GET progress for a specific problem
-// ========================================
-
-router.get("/:userId/:problemId", async (req, res) => {
-    try {
-      //  console.log("Fetching progress for user:", req.params.userId, "problem:", req.params.problemId);
-        const progress = await UserProblem.findOne({
-            user: req.params.userId,
-            problem: req.params.problemId,
-        }).populate("problem");
-
-        if (!progress) {
-            return res.status(404).json({
-                message: "Progress not found",
-            });
-        }
-
-        res.json(progress);
-    } catch (err) {
-        res.status(500).json({
-            message: err.message,
-        });
-    }
-});
-
 
 module.exports = router

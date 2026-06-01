@@ -6,7 +6,7 @@ function ProblemCard({
   problem,
   user,
   progressmap,
-  refreshStats,
+  updateProgress,
 }) {
   const [solved, setSolved] =
     useState(false);
@@ -58,23 +58,24 @@ function ProblemCard({
           }),
         }
       );
-
-      refreshStats?.();
     } catch (err) {
       console.error(err);
     }
   };
 
   const handleSolved = async () => {
-    const newSolved = !solved;
+  const newSolved = !solved;
 
-    setSolved(newSolved);
+  setSolved(newSolved);
 
-    await saveProgress({
-      solved: newSolved,
-    });
-  };
+  updateProgress(problem._id, {
+    solved: newSolved,
+  });
 
+  await saveProgress({
+    solved: newSolved,
+  });
+};
   const handleDifficulty = async (
     value
   ) => {
