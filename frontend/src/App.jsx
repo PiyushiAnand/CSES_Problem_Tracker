@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import TopicSection from "./components/Topic";
 
-const API_URL = "http://localhost:5001/api";
+// const API_URL = "http://localhost:5001/api";
+const API_URL = "https://cses-problem-tracker-1.onrender.com/api";
 
 function App() {
   const [data, setData] = useState({});
