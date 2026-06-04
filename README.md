@@ -1,115 +1,384 @@
 # CSES Problem Tracker
 
-A full-stack tracker for solving CSES problems by topic. The app includes a React + Vite frontend and an Express + MongoDB backend for saving user progress, difficulty, notes, and topic stats.
+A full-stack web application for tracking progress on the CSES Problem Set (or any topic-based problem set). Problems are organized by topic, and users can track solved problems, difficulty ratings, personal notes, and completion statistics.
+
+**Live Demo:** https://cses-problem-tracker-2.onrender.com
+
+This might take a while to load since I'm using free version of render.
+
+---
 
 ## Features
 
-- User login / create account by username
-- Browse CSES problems grouped by topic
-- Track solved status for each problem
-- Save difficulty level and personal notes per problem
-- View topic completion progress and stats
-- Persist user progress in MongoDB
+- User login / account creation using a username
+- Problems grouped by topic
+- Mark problems as solved or unsolved
+- Track personal difficulty ratings
+- Add notes and hints for future reference
+- Topic-wise progress bars and completion statistics
+- Reset progress for individual topics
+- Reset all progress with one click
+- Persistent storage using MongoDB
+- Responsive React frontend
+
+---
 
 ## Tech Stack
 
-- Frontend: React, Vite, Tailwind CSS
-- Backend: Express, Node.js, MongoDB, Mongoose
-- Data import script to seed problems from `topics.json`
+### Frontend
 
-## Repository Structure
+- React
+- Vite
+- Tailwind CSS
 
-- `/backend` - Express server, MongoDB models, API routes
-- `/frontend` - React application built with Vite
-- `topics.json` - source problem list used for backend seeding
+### Backend
 
-## Setup
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
 
-### 1. Backend
+### Deployment
+
+- Render
+- MongoDB Atlas
+
+---
+
+## Screenshots
+
+_Add screenshots here._
+
+---
+
+## Project Structure
+
+```text
+CSES-Problem-Tracker/
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── App.jsx
+│   │   └── ...
+│   └── ...
+│
+├── backend/
+│   ├── models/
+│   ├── routes/
+│   ├── scripts/
+│   │   └── importProblems.js
+│   ├── server.js
+│   └── ...
+│
+├── topics.json
+├── get_links.py
+└── README.md
+```
+
+---
+
+## Using Your Own Problem Set
+
+This tracker is not limited to CSES. It can work with any collection of problems as long as they are provided in the correct `topics.json` format.
+
+### Example Format
+
+```json
+[
+  {
+    "topic": "Graphs",
+    "problems": [
+      {
+        "name": "Building Roads",
+        "link": "https://example.com/problem1"
+      },
+      {
+        "name": "Round Trip",
+        "link": "https://example.com/problem2"
+      }
+    ]
+  }
+]
+```
+
+### Importing Problems
+
+The application reads problems from MongoDB, not directly from `topics.json`.
+
+Whenever you create or modify `topics.json`, run:
 
 ```bash
 cd backend
-npm install
+
+node scripts/importProblems.js
 ```
 
-Create a `.env` file in `/backend` with the MongoDB connection string:
+This script:
 
-```env
-MONGO_URI=your_mongodb_connection_string
+- Reads all topics and problems from `topics.json`
+- Inserts them into MongoDB
+- Makes them available to the frontend
+
+**Important:** If you update `topics.json`, run the import script again so the database stays synchronized.
+
+---
+
+## CSES Web Crawler
+
+A crawler for generating a CSES-compatible `topics.json` is included:
+
+```bash
+get_links.py
 ```
 
-If you want to seed problems into the database, run:
+The crawler extracts problem names and links from the CSES website and generates data that can be imported using:
 
 ```bash
 node scripts/importProblems.js
 ```
 
-Start the backend server:
+You can also modify the crawler for other problem sources.
+
+---
+
+# Running Locally
+
+## 1. Clone the Repository
 
 ```bash
-npm run dev
+git clone https://github.com/<your-username>/cses-problem-tracker.git
+
+cd cses-problem-tracker
 ```
 
-The backend server will run on `http://localhost:5001` by default.
+---
 
-### 2. Frontend
+## 2. Configure MongoDB
+
+Create a `.env` file inside `backend/`:
+
+```env
+MONGO_URI=your_mongodb_connection_string
+PORT=5001
+```
+
+You can create a free MongoDB Atlas cluster and obtain the connection string from Atlas.
+
+---
+
+## 3. Update Backend CORS Settings
+
+The deployed version is configured to accept requests from the hosted frontend.
+
+In `backend/server.js`, replace:
+
+```js
+app.use(
+  cors({
+    origin: "https://cses-problem-tracker-2.onrender.com",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
+```
+
+with:
+
+```js
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
+```
+
+---
+
+## 4. Update Frontend API URLs
+
+### In `frontend/src/App.jsx`
+
+Replace:
+
+```js
+const API_URL =
+  "https://cses-problem-tracker-1.onrender.com/api";
+```
+
+with:
+
+```js
+const API_URL =
+  "http://localhost:5001/api";
+```
+
+### In `frontend/src/components/ProblemCard.jsx`
+
+Replace:
+
+```js
+const API_URL =
+  "https://cses-problem-tracker-1.onrender.com/api";
+```
+
+with:
+
+```js
+const API_URL =
+  "http://localhost:5001/api";
+```
+
+---
+
+## 5. Add and Import Problems
+
+Create or modify `topics.json`, then import the problems:
 
 ```bash
-cd frontend
+cd backend
+
+node scripts/importProblems.js
+```
+
+Verify that the problems appear in your MongoDB database before starting the frontend.
+
+---
+
+## 6. Start the Backend
+
+```bash
+cd backend
+
 npm install
 npm run dev
 ```
 
-Open the local Vite URL shown in the terminal (usually `http://localhost:5173`).
+Backend will run on:
 
-## Usage
+```text
+http://localhost:5001
+```
 
-1. Open the frontend app in your browser.
-2. Enter a username to log in or create a new account.
-3. Browse problems by topic.
-4. Click `Mark Solved` to save solved status.
-5. Use the difficulty dropdown and notes field to track progress.
-6. Progress is preserved per-user in MongoDB.
+---
 
-## API Endpoints
+## 7. Start the Frontend
 
-### Problems
+```bash
+cd frontend
 
-- `GET /api/problems` - Get all problems
-- `GET /api/problems/topic/:topic` - Get problems for a specific topic
+npm install
+npm run dev
+```
 
-### Users
+Frontend will run on:
 
-- `POST /api/users/login` - Login or create a user by username
-- `POST /api/users` - Create a new user
+```text
+http://localhost:5173
+```
 
-### User Progress
+---
 
-- `POST /api/userproblems` - Create or update problem progress
-- `PATCH /api/userproblems/solve` - Update solved status only
-- `PATCH /api/userproblems/difficulty` - Update difficulty only
-- `PATCH /api/userproblems/notes` - Update notes only
-- `PATCH /api/userproblems/concepts` - Update concepts only
-- `GET /api/userproblems/user/:userId` - Get all progress for a user
-- `GET /api/userproblems/:userId/:problemId` - Get progress for a specific problem
-- `GET /api/userproblems/stats/:userId` - Get all topic stats for a user
-- `GET /api/userproblems/stats/:userId/topic/:topic` - Get stats for a topic
-- `DELETE /api/userproblems/:userId/:problemId` - Delete progress for a problem
-- `DELETE /api/userproblems/reset/:userId` - Reset all progress for a user
-- `DELETE /api/userproblems/reset/:userId/topic/:topic` - Reset progress for a topic
+## 8. Open the Application
 
-## Data Models
+Visit:
 
-- `Problem` - problem name, topic, and CSES link
-- `User` - username and solved problem references
-- `UserProblem` - user problem progress with solved, difficulty, concepts, and notes
+```text
+http://localhost:5173
+```
 
-## Notes
+and start tracking your progress.
 
-- The frontend is configured to talk to `http://localhost:5001/api`.
-- If you change backend ports, update `frontend/src/App.jsx` accordingly.
-- Make sure MongoDB is reachable from your environment.
+---
 
-## License
+# Deployment
 
-This project is available under the MIT License.
+## Backend Deployment
+
+Deploy the Express server to Render and ensure:
+
+- Environment variables are configured
+- MongoDB Atlas network access is enabled
+- Atlas connection string is correct
+
+Example API URL:
+
+```text
+https://your-backend.onrender.com/api
+```
+
+---
+
+## Frontend Deployment
+
+Update the API URLs in:
+
+- `frontend/src/App.jsx`
+- `frontend/src/components/ProblemCard.jsx`
+
+Example:
+
+```js
+const API_URL =
+  "https://your-backend.onrender.com/api";
+```
+
+Then deploy the frontend using:
+
+- Render
+- Vercel
+- Netlify
+
+or any other static hosting provider.
+
+---
+
+## Database Models
+
+### User
+
+```js
+{
+  username: String
+}
+```
+
+### Problem
+
+```js
+{
+  name: String,
+  topic: String,
+  link: String
+}
+```
+
+### UserProblem
+
+```js
+{
+  user: ObjectId,
+  problem: ObjectId,
+  solved: Boolean,
+  difficulty: String,
+  notes: String,
+  concepts: []
+}
+```
+
+---
+
+## Future Improvements
+
+- Search and filter problems
+- Sorting by difficulty
+- Tags and custom categories
+- Import/export progress
+- OAuth authentication
+- Streak tracking
+- Leaderboards
+- Dark/light theme toggle
+- Public profiles
+
